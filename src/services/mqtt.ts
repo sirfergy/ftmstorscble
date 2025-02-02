@@ -38,6 +38,7 @@ export class MqttService {
     public publishRscMessage(speedMetersPerSecond: number, cadenceStepsPerMinute: number) {
         if (this.client && this.client.connected) {
             const message = JSON.stringify({ speedMetersPerSecond, cadenceStepsPerMinute });
+            debug(`Publishing message: ${message}`);
             this.client.publish(topic, message, (err) => {
                 if (err) {
                     debug("Error publishing message: ", err);
@@ -51,6 +52,7 @@ export class MqttService {
             if (!err) {
                 this.client.on("message", (topic, message) => {
                     const { speedMetersPerSecond, cadenceStepsPerMinute } = JSON.parse(message.toString());
+                    debug(`Received message: ${speedMetersPerSecond}, ${cadenceStepsPerMinute}`);
                     callback(speedMetersPerSecond, cadenceStepsPerMinute);
                 });
             } else {
