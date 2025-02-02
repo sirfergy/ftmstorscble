@@ -32,7 +32,7 @@
   "dependencies": {
     "@abandonware/bleno": "abandonware/bleno",
     "@abandonware/noble": "sirfergy/noble",
-    "ant-plus-next": "sirfergy/ant-plus-next",
+    "ant-plus-next": "^0.3.2",
     "command-line-args": "^6.0.1",
     "mqtt": "^5.10.3"
   },
