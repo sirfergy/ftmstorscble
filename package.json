@@ -8,7 +8,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
     "main": "node dist/index.js",
-    "subscriber": "node dist/index.js --rsc",
+    "subscriber": "node dist/index.js --rsc --subscribe",
     "publisher": "node dist/index.js --ftms --ant --publish"
   },
   "repository": {
