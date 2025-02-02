@@ -27,7 +27,7 @@ On both devices, run these steps:
 - `npm install`
 - `npm run build`
 
-To use, on the first I have my ANT+ stick connected and run this command:
+To use, on the first I have my ANT+ stick connected and MQTT running and run this command:
 `npm run publisher`
 
 On the second I run this command:
