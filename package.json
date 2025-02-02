@@ -7,7 +7,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
-    "main": "node dist/index.js"
+    "main": "node dist/index.js",
+    "subscriber": "node dist/index.js --rsc",
+    "publisher": "node dist/index.js --ftms --ant --publish"
   },
   "repository": {
     "type": "git",
