@@ -21,7 +21,19 @@ sudo setcap cap_net_raw+eip $(eval readlink -f `which node`)
 
 
 # How to use
+I've not been able to successfully run both the subscriber and publisher on the same machine, so until I figure that out I have it running on two Raspberry Pi devices.
 
+On both devices, run these steps:
+- `npm install`
+- `npm run build`
+
+To use, on the first I have my ANT+ stick connected and run this command:
+`npm run publisher`
+
+On the second I run this command:
+`npm run subscriber -- --broker mqtt://mqtthost:8113`
+
+And then on my Garmin I search for a sensor and it _should_ find your Pi running as the subscriber.
 
 # Notes
 This is written pretty specific for my scenario, but with some additional effort it could be expanded to work for many more scenarios.
