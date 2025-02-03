@@ -13,11 +13,12 @@ I have a Garmin Forerunner watch and a Horizon Fitness treadmill, and wanted to 
 ```sh
 sudo setcap cap_net_raw+eip $(eval readlink -f `which node`)
 ```
+
 - If you plan to use ANT, please follow the steps [here](https://gallochri.com/2020/05/universal-treadmill-speed-sensor-for-zwift-with-ant-stick-and-raspberry-pi/), with the step for creating a UDEV rule being the most important
   - `lsusb` to get device ID
   - Create UDEV rule
     - `sudo vim /etc/udev/rules.d/Dynastream-ANTUSB-m.rules`
-    - `SUBSYSTEM=="usb", ATTRS{idVendor}=="0fcf", ATTRS{idProduct}=="1009", RUN+="/sbin/modprobe usbserial vendor=0x0fcf product=0x1009", MODE="0666", OWNER="pi", GROUP="root"`, replacing 1009 with the ID of your device
+    - `SUBSYSTEM=="usb", ATTRS{idVendor}=="0fcf", ATTRS{idProduct}=="1008", RUN+="/sbin/modprobe usbserial vendor=0x0fcf product=0x1008", MODE="0666", OWNER="pi", GROUP="root"`, replacing 1009 with the ID of your device
 
 
 # How to use
@@ -39,3 +40,12 @@ And then on my Garmin I search for a sensor and it _should_ find your Pi running
 This is written pretty specific for my scenario, but with some additional effort it could be expanded to work for many more scenarios.
 
 On linux, you have to use my fork of noble due to a recent change to the kernel. I have a [PR](https://github.com/abandonware/noble/pull/349) out but not sure when it'll be merged.
+
+# Experimental
+I installed a USB BT adapter to try and run two instances of the program on the same Pi. By default a second BT adapter is soft blocked, and to verify you need to run this:
+`rfkill list`
+
+If it shows as soft blocked, run the following:
+`rfkill unblock bluetooth`
+
+While this allows me to run two instances (one subscriber, other publisher) it does matter that you have the right secondary controller. 

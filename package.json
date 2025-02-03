@@ -9,7 +9,8 @@
     "build": "tsc",
     "main": "node dist/index.js",
     "subscriber": "node dist/index.js --rsc --subscribe",
-    "publisher": "node dist/index.js --ftms --ant --publish"
+    "publisher": "node dist/index.js --ftms --ant --publish",
+    "publisher-secondary": "export DEBUG=bleno,noble && export NOBLE_HCI_DEVICE_ID=0 && npm run publisher"
   },
   "repository": {
     "type": "git",
