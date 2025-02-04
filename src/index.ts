@@ -31,7 +31,7 @@ let bleService: BleService;
 if (rsc) {
     bleService = new BleService();
 
-    if (subscribe) {
+    if (subscribe && !publish) {
         mqttService!.subscribeToRscMessages((speedMetersPerSecond, cadenceStepsPerMinute) => {
             bleService.publishRscMessage(speedMetersPerSecond, cadenceStepsPerMinute);
         });
