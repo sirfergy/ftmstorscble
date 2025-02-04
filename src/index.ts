@@ -20,25 +20,25 @@ const optionDefinitions = [
 ];
 const { rsc, ant, ftms, publish, subscribe, broker } = commandLineArgs(optionDefinitions, { camelCase: true }) as { rsc: boolean, ant: boolean, ftms: boolean, publish: boolean, subscribe: boolean, broker: string };
 
-let mqttService: MqttService;
+let mqttService?: MqttService;
 if (publish && subscribe) {
     // all local!
 } else if (publish || subscribe) {
     mqttService = new MqttService(broker);
 }
 
-let bleService: BleService;
+let bleService?: BleService;
 if (rsc) {
     bleService = new BleService();
 
-    if (subscribe && !publish) {
+    if (subscribe && mqttService) {
         mqttService!.subscribeToRscMessages((speedMetersPerSecond, cadenceStepsPerMinute) => {
             bleService.publishRscMessage(speedMetersPerSecond, cadenceStepsPerMinute);
         });
     }
 }
 
-let antService: AntService;
+let antService?: AntService;
 if (ant) {
     antService = new AntService();
 
@@ -47,7 +47,7 @@ if (ant) {
 
         if (publish && subscribe) {
             bleService.publishRscMessage(speedMetersPerSecond, cadenceStepsPerMinute);
-        } else if (publish) {
+        } else if (publish && mqttService) {
             mqttService!.publishRscMessage(speedMetersPerSecond, cadenceStepsPerMinute);
         }
     });
@@ -62,7 +62,7 @@ if (ftms) {
 
         if (publish && subscribe) {
             bleService.publishRscMessage(speedMetersPerSecond, cadenceStepsPerMinute);
-        } else if (publish) {
+        } else if (publish && mqttService) {
             mqttService!.publishRscMessage(speedMetersPerSecond, cadenceStepsPerMinute);
         }
     });
