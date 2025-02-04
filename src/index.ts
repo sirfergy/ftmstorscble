@@ -20,32 +20,32 @@ const optionDefinitions = [
 ];
 const { rsc, ant, ftms, publish, subscribe, broker } = commandLineArgs(optionDefinitions, { camelCase: true }) as { rsc: boolean, ant: boolean, ftms: boolean, publish: boolean, subscribe: boolean, broker: string };
 
-let mqttService?: MqttService;
+let mqttService: MqttService | undefined;
 if (publish && subscribe) {
     // all local!
 } else if (publish || subscribe) {
     mqttService = new MqttService(broker);
 }
 
-let bleService?: BleService;
+let bleService: BleService | undefined;
 if (rsc) {
     bleService = new BleService();
 
     if (subscribe && mqttService) {
-        mqttService!.subscribeToRscMessages((speedMetersPerSecond, cadenceStepsPerMinute) => {
-            bleService.publishRscMessage(speedMetersPerSecond, cadenceStepsPerMinute);
+        mqttService.subscribeToRscMessages((speedMetersPerSecond, cadenceStepsPerMinute) => {
+            bleService!.publishRscMessage(speedMetersPerSecond, cadenceStepsPerMinute);
         });
     }
 }
 
-let antService?: AntService;
+let antService: AntService | undefined;
 if (ant) {
     antService = new AntService();
 
     antService.subscribeToAntMessages((cadence) => {
         cadenceStepsPerMinute = cadence;
 
-        if (publish && subscribe) {
+        if (publish && bleService) {
             bleService.publishRscMessage(speedMetersPerSecond, cadenceStepsPerMinute);
         } else if (publish && mqttService) {
             mqttService!.publishRscMessage(speedMetersPerSecond, cadenceStepsPerMinute);
@@ -53,17 +53,17 @@ if (ant) {
     });
 }
 
-let ftmsService: FtmsService;
+let ftmsService: FtmsService | undefined;
 if (ftms) {
     ftmsService = new FtmsService();
 
     ftmsService.subscribeToFtmsMessages((speed) => {
         speedMetersPerSecond = speed;
 
-        if (publish && subscribe) {
+        if (publish && bleService) {
             bleService.publishRscMessage(speedMetersPerSecond, cadenceStepsPerMinute);
         } else if (publish && mqttService) {
-            mqttService!.publishRscMessage(speedMetersPerSecond, cadenceStepsPerMinute);
+            mqttService.publishRscMessage(speedMetersPerSecond, cadenceStepsPerMinute);
         }
     });
 }
