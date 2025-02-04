@@ -21,7 +21,9 @@ const optionDefinitions = [
 const { rsc, ant, ftms, publish, subscribe, broker } = commandLineArgs(optionDefinitions, { camelCase: true }) as { rsc: boolean, ant: boolean, ftms: boolean, publish: boolean, subscribe: boolean, broker: string };
 
 let mqttService: MqttService;
-if (publish || subscribe) {
+if (publish && subscribe) {
+    // all local!
+} else if (publish || subscribe) {
     mqttService = new MqttService(broker);
 }
 
@@ -43,7 +45,9 @@ if (ant) {
     antService.subscribeToAntMessages((cadence) => {
         cadenceStepsPerMinute = cadence;
 
-        if (publish) {
+        if (publish && subscribe) {
+            bleService.publishRscMessage(speedMetersPerSecond, cadenceStepsPerMinute);
+        } else if (publish) {
             mqttService!.publishRscMessage(speedMetersPerSecond, cadenceStepsPerMinute);
         }
     });
@@ -56,7 +60,9 @@ if (ftms) {
     ftmsService.subscribeToFtmsMessages((speed) => {
         speedMetersPerSecond = speed;
 
-        if (publish) {
+        if (publish && subscribe) {
+            bleService.publishRscMessage(speedMetersPerSecond, cadenceStepsPerMinute);
+        } else if (publish) {
             mqttService!.publishRscMessage(speedMetersPerSecond, cadenceStepsPerMinute);
         }
     });
