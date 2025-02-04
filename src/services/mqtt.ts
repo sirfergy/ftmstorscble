@@ -13,7 +13,7 @@ export class MqttService {
 
         this.client = connect(this.brokerUrl, {
             keepalive: 60,
-            clientId: `${os.hostname}-rsc`,
+            clientId: `${os.hostname}-${process.pid}-rsc`,
             protocolId: 'MQTT',
             protocolVersion: 5,
             clean: true,
