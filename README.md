@@ -22,30 +22,30 @@ sudo setcap cap_net_raw+eip $(eval readlink -f `which node`)
 
 
 # How to use
-I've not been able to successfully run both the subscriber and publisher on the same machine, so until I figure that out I have it running on two Raspberry Pi devices.
-
-On both devices, run these steps:
 - `npm install`
 - `npm run build`
+- `npm run publisher`
+- `npm run subscriber`
+- To use an MQTT server not running on the local machine (or publisher or subscriber role are on different machines), pass the `--broker mqtt://mqtthost:8113` parameter
+- On your Garmin search for a sensor and it _should_ find your machine running as the subscriber
 
-To use, on the first I have my ANT+ stick connected and MQTT running and run this command:
-`npm run publisher`
+## Raspberry Pi
+If you have a Raspberry Pi, the native bluetooth does not support (at least with bleno/noble) both the publisher and subscriber roles. In this case you have two options:
 
-On the second I run this command:
-`npm run subscriber -- --broker mqtt://mqtthost:8113`
-
-And then on my Garmin I search for a sensor and it _should_ find your Pi running as the subscriber.
+- Setup ftmstorscble on two different Pi's, with one being the publisher and the other the subscriber
+- Buy a USB BT dongle that uses a supported chipset, e.g. one based on the rtl8761bu chipset.  
+   - You need to set the `NOBLE_HCI_DEVICE_ID` environment variable to the USB adapter when running the publisher command
 
 # Notes
 This is written pretty specific for my scenario, but with some additional effort it could be expanded to work for many more scenarios.
 
 On linux, you have to use my fork of noble due to a recent change to the kernel. I have a [PR](https://github.com/abandonware/noble/pull/349) out but not sure when it'll be merged.
 
-# Experimental
-I installed a USB BT adapter to try and run two instances of the program on the same Pi. By default a second BT adapter is soft blocked, and to verify you need to run this:
-`rfkill list`
-
-If it shows as soft blocked, run the following:
-`rfkill unblock bluetooth`
-
-While this allows me to run two instances (one subscriber, other publisher) it does matter that you have the right secondary controller. 
+# Troubleshooting
+## Raspberry Pi
+- The USB BT adapter may not power up, you need to disable the soft block using these two steps:
+  - `rfkill list`
+  - `rfkill unblock bluetooth`
+-  The bootloader may have a [bug](https://github.com/raspberrypi/linux/issues/6141) that was recently fixed that prevents the USB BT adapter from initializing. Updating the bootloader resolves
+    - `sudo dmesg | grep -i blue` to check for errors initializing the bluetooth controller
+    - https://pimylifeup.com/raspberry-pi-bootloader/
