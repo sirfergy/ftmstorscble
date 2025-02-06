@@ -22,7 +22,7 @@ export class FtmsService {
     private discovered = false;
     private callback?: (speedMetersPerSecond: number) => void;
     private lastDataReceived = Date.now();
-    private peripheral: Peripheral;
+    // private peripheral: Peripheral;
 
     constructor() {
         noble.on('stateChange', this.onStateChange);
@@ -33,7 +33,7 @@ export class FtmsService {
                 debug("Disconnecting due to inactivity");
                 noble.stopScanning();
                 noble.removeAllListeners();
-                noble.resetAsync();
+                noble.reset();
             }
         }, 1000);
     }
@@ -62,7 +62,7 @@ export class FtmsService {
 
         if (!this.discovered && peripheral.advertisement.localName && peripheral.advertisement.localName.includes("HORIZON")) {
             this.discovered = true;
-            this.peripheral = peripheral;
+            // this.peripheral = peripheral;
 
             await noble.stopScanningAsync();
             await peripheral.connectAsync();
