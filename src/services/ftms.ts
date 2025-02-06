@@ -25,8 +25,8 @@ export class FtmsService {
     // private peripheral: Peripheral;
 
     constructor() {
-        noble.on('stateChange', this.onStateChange);
-        noble.on('discover', this.onDiscover);
+        noble.on('stateChange', (state) => this.onStateChange(state));
+        noble.on('discover', (peripheral) => this.onDiscover(peripheral));
 
         setInterval(() => {
             if (Date.now() - this.lastDataReceived > 5 * 60 * 1000) {
@@ -79,7 +79,7 @@ export class FtmsService {
                 this.discovered = false;
             });
 
-            treadmill.on('data', this.onTreadmillData);
+            treadmill.on('data', (data, isNotification) => this.onTreadmillData(data, isNotification));
         }
     }
 
