@@ -21,7 +21,7 @@ const ftmsFlags = {
 export class FtmsService {
     private discovered = false;
     private callback?: (speedMetersPerSecond: number) => void;
-    private lastDataReceived = Date.now();
+    private lastSpeedDataReceived = Date.now();
     // private peripheral: Peripheral;
 
     constructor() {
@@ -29,7 +29,7 @@ export class FtmsService {
         noble.on('discover', (peripheral) => this.onDiscover(peripheral));
 
         setInterval(() => {
-            if (Date.now() - this.lastDataReceived > 5 * 60 * 1000) {
+            if (Date.now() - this.lastSpeedDataReceived > 5 * 60 * 1000) {
                 debug("Disconnecting due to inactivity");
                 noble.stopScanning();
                 noble.removeAllListeners();
@@ -84,7 +84,6 @@ export class FtmsService {
     }
 
     private onTreadmillData(data: Buffer, isNotification: boolean): void {
-        this.lastDataReceived = Date.now();
         const flags = data.readUInt16LE();
 
         if ((flags & ftmsFlags.moreData) !== ftmsFlags.moreData) {
@@ -92,6 +91,10 @@ export class FtmsService {
             debug(`Instantaneous speed: ${speedInDekametersPerHour}`);
 
             const speedMetersPerSecond = speedInDekametersPerHour * 10 / 3600;
+
+            if (speedMetersPerSecond > 0) {
+                this.lastSpeedDataReceived = Date.now();
+            }
 
             this.callback && this.callback(speedMetersPerSecond);
 
