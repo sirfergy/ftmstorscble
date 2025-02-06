@@ -1,3 +1,5 @@
+[![Compile Node.js Project](https://github.com/sirfergy/ftmstorscble/actions/workflows/compile.yaml/badge.svg)](https://github.com/sirfergy/ftmstorscble/actions/workflows/compile.yaml)
+
 # ftmstorscble
 Reads FTMS treadmill speed data and broadcasts it as a BLE running speed and cadence service. If you have an ANT+ USB stick it will also include cadence information along with the running speed from the treadmill.
 
