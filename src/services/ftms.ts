@@ -82,7 +82,7 @@ export class FtmsService {
 
             await treadmill.subscribeAsync();
 
-            peripheral.on('disconnect', () => this.onPeripheralDisconnect);
+            peripheral.on('disconnect', () => this.onPeripheralDisconnect());
             treadmill.on('data', (data, isNotification) => this.onTreadmillData(data, isNotification));
         }
     }
