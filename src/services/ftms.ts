@@ -22,18 +22,27 @@ export class FtmsService {
     private discovered = false;
     private callback?: (speedMetersPerSecond: number) => void;
     private lastSpeedDataReceived = Date.now();
-    // private peripheral: Peripheral;
 
     constructor() {
         noble.on('stateChange', (state) => this.onStateChange(state));
         noble.on('discover', (peripheral) => this.onDiscover(peripheral));
 
         setInterval(() => {
-            if (Date.now() - this.lastSpeedDataReceived > 5 * 60 * 1000) {
-                debug("Disconnecting due to inactivity");
-                noble.stopScanning();
-                noble.removeAllListeners();
-                noble.reset();
+            if (this.discovered) {
+                if (Date.now() - this.lastSpeedDataReceived > 5 * 60 * 1000) {
+                    debug("Disconnecting due to inactivity");
+                    noble.stopScanning();
+                    noble.removeAllListeners();
+                    noble.reset();
+                    this.discovered = false;
+
+                    // the interesting next step is what do we do now? the treadmill is still on, 
+                    // and won't turn off is we're connected to it. the laziest idea is to just start scanning again
+                    // in ~15 minutes, since by then the treadmill will have turned off
+                    if (Date.now() - this.lastSpeedDataReceived > 30 * 60 * 1000) {
+                        this.onStateChange("poweredOn");
+                    }
+                }
             }
         }, 1000);
     }
@@ -62,7 +71,6 @@ export class FtmsService {
 
         if (!this.discovered && peripheral.advertisement.localName && peripheral.advertisement.localName.includes("HORIZON")) {
             this.discovered = true;
-            // this.peripheral = peripheral;
 
             await noble.stopScanningAsync();
             await peripheral.connectAsync();
@@ -74,13 +82,14 @@ export class FtmsService {
 
             await treadmill.subscribeAsync();
 
-            peripheral.on('disconnect', () => {
-                debug("Disconnected");
-                this.discovered = false;
-            });
-
+            peripheral.on('disconnect', () => this.onPeripheralDisconnect);
             treadmill.on('data', (data, isNotification) => this.onTreadmillData(data, isNotification));
         }
+    }
+
+    private onPeripheralDisconnect(): void {
+        debug("Disconnected");
+        this.discovered = false;
     }
 
     private onTreadmillData(data: Buffer, isNotification: boolean): void {
