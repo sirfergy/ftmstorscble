@@ -71,6 +71,7 @@ export class FtmsService {
 
         if (!this.discovered && peripheral.advertisement.localName && peripheral.advertisement.localName.includes("HORIZON")) {
             this.discovered = true;
+            this.lastSpeedDataReceived = Date.now();
 
             await noble.stopScanningAsync();
             await peripheral.connectAsync();
