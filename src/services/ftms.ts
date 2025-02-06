@@ -73,14 +73,18 @@ export class FtmsService {
             this.discovered = true;
             this.lastSpeedDataReceived = Date.now();
 
+            debug("Stopping scanning and connecting");
             await noble.stopScanningAsync();
+            debug("Connecting to peripheral");
             await peripheral.connectAsync();
 
+            debug("Discovering services and characteristics");
             const { services } = await peripheral.discoverSomeServicesAndCharacteristicsAsync(["1826"], ["2acd"]);
 
             const ftms = services.find(s => s.uuid == "1826")!;
             const treadmill = ftms.characteristics.find(c => c.uuid.toLowerCase() == "2acd")!;
 
+            debug("Subscribing to treadmill");
             await treadmill.subscribeAsync();
 
             peripheral.on('disconnect', () => this.onPeripheralDisconnect());
