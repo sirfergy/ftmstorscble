@@ -107,6 +107,7 @@ export class FtmsService {
                 debug(`Service ${service.uuid}`);
                 for (const characteristic of service.characteristics) {
                     debug(`Characteristic ${characteristic.uuid}`);
+                    debug(`Properties: ${characteristic.properties.join(", ")}`);
                 }
             }
 
