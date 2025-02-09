@@ -34,7 +34,7 @@
   "homepage": "https://github.com/sirfergy/ftmstorscble#readme",
   "dependencies": {
     "@abandonware/bleno": "^0.6.2",
-    "@abandonware/noble": "sirfergy/noble",
+    "@abandonware/noble": "abandonware/noble",
     "ant-plus-next": "^0.3.2",
     "command-line-args": "^6.0.1",
     "mqtt": "^5.10.3"
