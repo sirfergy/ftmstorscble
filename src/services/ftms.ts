@@ -95,7 +95,7 @@ export class FtmsService {
             for (const descriptor of statusDescriptors) {
                 debug(`Reading descriptor ${descriptor.uuid}`);
                 const value = await descriptor.readValueAsync();
-                debug(`Descriptor value: ${value.toString("hex")}`);
+                debug(`Descriptor value length: ${value.length}, byte length: ${value.byteLength}, value: ${value.toString("hex")}`);
             }
 
 
