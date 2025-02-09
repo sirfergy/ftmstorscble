@@ -89,7 +89,7 @@ export class FtmsService {
             await treadmill.subscribeAsync();
 
             debug("Subscribing to treadmill status");
-            //await status.subscribeAsync();
+            await status.subscribeAsync();
 
             status.once('notify', (state) => debug(`Status notify: ${state}`));
 
