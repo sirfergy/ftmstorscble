@@ -79,16 +79,21 @@ export class FtmsService {
             await peripheral.connectAsync();
 
             debug("Discovering services and characteristics");
-            const { services } = await peripheral.discoverSomeServicesAndCharacteristicsAsync(["1826"], ["2acd"]);
+            const { services } = await peripheral.discoverSomeServicesAndCharacteristicsAsync(["1826"], ["2acd", "2ada"]);
 
             const ftms = services.find(s => s.uuid == "1826")!;
             const treadmill = ftms.characteristics.find(c => c.uuid.toLowerCase() == "2acd")!;
+            const status = ftms.characteristics.find(c => c.uuid.toLowerCase() == "2ada")!;
 
             debug("Subscribing to treadmill");
             await treadmill.subscribeAsync();
 
+            debug("Subscribing to treadmill status");
+            await status.subscribeAsync();
+
             peripheral.on('disconnect', () => this.onPeripheralDisconnect());
             treadmill.on('data', (data, isNotification) => this.onTreadmillData(data, isNotification));
+            status.on('data', (data, isNotification) => debug(`Status: ${data.toString("hex")}`));
         }
     }
 
