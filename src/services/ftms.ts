@@ -117,7 +117,7 @@ export class FtmsService {
             const status = ftms.characteristics.find(c => c.uuid.toLowerCase() == "2ada")!;
 
             debug("Subscribing to treadmill");
-            await treadmill.subscribeAsync();
+            //await treadmill.subscribeAsync();
 
             debug("Subscribing to cross trainer");
             await crossTrainer.subscribeAsync();
