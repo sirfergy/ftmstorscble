@@ -79,7 +79,18 @@ export class FtmsService {
             await peripheral.connectAsync();
 
             debug("Discovering services and characteristics");
-            const { services } = await peripheral.discoverSomeServicesAndCharacteristicsAsync(["1826"], ["2acd", "2ada"]);
+            const { services } = await peripheral.discoverAllServicesAndCharacteristicsAsync();
+
+            //const { services } = await peripheral.discoverSomeServicesAndCharacteristicsAsync(["1826"], ["2acd", "2ada"]);
+
+            debug(`Found ${services.length} services`);
+            for (const service of services) {
+                debug(`Service ${service.uuid}`);
+                for (const characteristic of service.characteristics) {
+                    debug(`Characteristic ${characteristic.uuid}`);
+                }
+            }
+
 
             const ftms = services.find(s => s.uuid == "1826")!;
             const treadmill = ftms.characteristics.find(c => c.uuid.toLowerCase() == "2acd")!;
