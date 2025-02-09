@@ -15,7 +15,26 @@ const ftmsFlags = {
     metabolicEquivalent: 1 << 9,
     elapsedTime: 1 << 10,
     remainingTime: 1 << 11,
-    force: 1 << 12
+    force: 1 << 12,
+};
+
+const crossTrainerDataFlags = {
+    moreData: 1,
+    averageSpeed: 1 << 1,
+    totalDistance: 1 << 2,
+    stepCount: 1 << 3,
+    strideCount: 1 << 4,
+    elevationGain: 1 << 5,
+    inclination: 1 << 6,
+    resistanceLevel: 1 << 7,
+    instantaneousPower: 1 << 8,
+    averagePower: 1 << 9,
+    expendedEnergy: 1 << 10,
+    heartRate: 1 << 11,
+    metabolicEquivalent: 1 << 12,
+    elapsedTime: 1 << 13,
+    remainingTime: 1 << 14,
+    movementDirection: 1 << 15,
 };
 
 export class FtmsService {
@@ -94,35 +113,34 @@ export class FtmsService {
 
             const ftms = services.find(s => s.uuid == "1826")!;
             const treadmill = ftms.characteristics.find(c => c.uuid.toLowerCase() == "2acd")!;
+            const crossTrainer = ftms.characteristics.find(c => c.uuid.toLowerCase() == "2ace")!;
             const status = ftms.characteristics.find(c => c.uuid.toLowerCase() == "2ada")!;
 
             debug("Subscribing to treadmill");
             await treadmill.subscribeAsync();
 
-            debug("Subscribing to treadmill status");
-
-            const statusDescriptors = await status.discoverDescriptorsAsync();
-            debug(`Found ${statusDescriptors.length} status descriptors`);
-            for (const descriptor of statusDescriptors) {
-                debug(`Reading descriptor ${descriptor.uuid}`);
-                const value = await descriptor.readValueAsync();
-                debug(`Descriptor value length: ${value.length}, byte length: ${value.byteLength}, value: ${value.toString("hex")}`);
-            }
-
-
-            status.on('notify', (state) => debug(`Status notify: ${state}`));
-
-
+            debug("Subscribing to cross trainer");
+            await crossTrainer.subscribeAsync();
 
             peripheral.on('disconnect', () => this.onPeripheralDisconnect());
             treadmill.on('data', (data, isNotification) => this.onTreadmillData(data, isNotification));
-            status.on('data', (data, isNotification) => debug(`Status: ${data.toString("hex")}`));
+            crossTrainer.on('data', (data, isNotification) => this.onCrossTrainerData(data, isNotification));
         }
     }
 
     private onPeripheralDisconnect(): void {
         debug("Disconnected");
         this.discovered = false;
+    }
+
+    private onCrossTrainerData(data: Buffer, isNotification: boolean): void {
+        const flags = data.readUintLE(0, 3);
+
+        Object.values(crossTrainerDataFlags).forEach(value => {
+            if ((flags & value) == value) {
+                debug(`Flag ${value} set`);
+            }
+        });
     }
 
     private onTreadmillData(data: Buffer, isNotification: boolean): void {
