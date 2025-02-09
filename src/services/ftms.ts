@@ -89,9 +89,12 @@ export class FtmsService {
             await treadmill.subscribeAsync();
 
             debug("Subscribing to treadmill status");
-            await status.subscribeAsync();
 
-            status.once('notify', (state) => debug(`Status notify: ${state}`));
+            const statusDescriptors = await status.discoverDescriptorsAsync();
+            debug(`Found ${statusDescriptors.length} status descriptors`);
+
+
+            status.on('notify', (state) => debug(`Status notify: ${state}`));
 
 
 
