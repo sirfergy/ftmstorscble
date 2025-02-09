@@ -120,11 +120,7 @@ export class FtmsService {
             //await treadmill.subscribeAsync();
 
             debug("Subscribing to cross trainer");
-            crossTrainer.on('notify', (state) => {
-                debug(`Cross trainer notify: ${state}`);
-            });
-
-            //await crossTrainer.subscribeAsync();
+            await crossTrainer.subscribeAsync();
 
             peripheral.on('disconnect', () => this.onPeripheralDisconnect());
             treadmill.on('data', (data, isNotification) => this.onTreadmillData(data, isNotification));
