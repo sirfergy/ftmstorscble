@@ -1,4 +1,4 @@
-import noble, { Peripheral } from "@abandonware/noble";
+import noble, { Peripheral, ServicesAndCharacteristics } from "@abandonware/noble";
 import Debug from "debug";
 const debug = Debug("ftms");
 
@@ -79,7 +79,7 @@ export class FtmsService {
             await peripheral.connectAsync();
 
             debug("Discovering services and characteristics");
-            const { services } = await peripheral.discoverSomeServicesAndCharacteristicsAsync(["1826"], ["2acd", "2ada"]);
+            const { services } = await this.retryableDiscoverPeripheral(peripheral);
             const ftms = services.find(s => s.uuid == "1826")!;
             const treadmill = ftms.characteristics.find(c => c.uuid.toLowerCase() == "2acd")!;
 
@@ -89,6 +89,23 @@ export class FtmsService {
             peripheral.on('disconnect', () => this.onPeripheralDisconnect());
             treadmill.on('data', (data, isNotification) => this.onTreadmillData(data, isNotification));
         }
+    }
+
+    /// Sometimes the discover fails with "uh oh, no current command" and we need to retry. 
+    private async retryableDiscoverPeripheral(peripheral: Peripheral): Promise<ServicesAndCharacteristics> {
+        const discoverPromise = peripheral.discoverSomeServicesAndCharacteristicsAsync(["1826"], ["2acd", "2ada"]);
+        const timeoutPromise = new Promise<void>((resolve, reject) => {
+            setTimeout(() => reject("Timeout"), 10000);
+        });
+
+        try {
+            await Promise.race([discoverPromise, timeoutPromise]);
+        } catch (error) {
+            debug(`Error when discovering: ${error}, trying again`);
+            return await peripheral.discoverSomeServicesAndCharacteristicsAsync(["1826"], ["2acd", "2ada"]);
+        }
+
+        return discoverPromise;
     }
 
     private onPeripheralDisconnect(): void {
