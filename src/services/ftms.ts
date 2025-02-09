@@ -18,25 +18,6 @@ const ftmsFlags = {
     force: 1 << 12,
 };
 
-const crossTrainerDataFlags = {
-    moreData: 1,
-    averageSpeed: 1 << 1,
-    totalDistance: 1 << 2,
-    stepCount: 1 << 3,
-    strideCount: 1 << 4,
-    elevationGain: 1 << 5,
-    inclination: 1 << 6,
-    resistanceLevel: 1 << 7,
-    instantaneousPower: 1 << 8,
-    averagePower: 1 << 9,
-    expendedEnergy: 1 << 10,
-    heartRate: 1 << 11,
-    metabolicEquivalent: 1 << 12,
-    elapsedTime: 1 << 13,
-    remainingTime: 1 << 14,
-    movementDirection: 1 << 15,
-};
-
 export class FtmsService {
     private discovered = false;
     private callback?: (speedMetersPerSecond: number) => void;
@@ -98,54 +79,21 @@ export class FtmsService {
             await peripheral.connectAsync();
 
             debug("Discovering services and characteristics");
-            const { services } = await peripheral.discoverAllServicesAndCharacteristicsAsync();
-
-            //const { services } = await peripheral.discoverSomeServicesAndCharacteristicsAsync(["1826"], ["2acd", "2ada"]);
-
-            debug(`Found ${services.length} services`);
-            for (const service of services) {
-                debug(`Service ${service.uuid}`);
-                for (const characteristic of service.characteristics) {
-                    debug(`Characteristic ${characteristic.uuid}`);
-                    debug(`Properties: ${characteristic.properties.join(", ")}`);
-                }
-            }
-
-
+            const { services } = await peripheral.discoverSomeServicesAndCharacteristicsAsync(["1826"], ["2acd", "2ada"]);
             const ftms = services.find(s => s.uuid == "1826")!;
             const treadmill = ftms.characteristics.find(c => c.uuid.toLowerCase() == "2acd")!;
-            const crossTrainer = ftms.characteristics.find(c => c.uuid.toLowerCase() == "2ace")!;
-            const status = ftms.characteristics.find(c => c.uuid.toLowerCase() == "2ada")!;
 
             debug("Subscribing to treadmill");
-            //await treadmill.subscribeAsync();
-
-            debug("Subscribing to cross trainer");
-            // await crossTrainer.subscribeAsync();
-
-            crossTrainer.on('notify', (state) => debug(`Cross trainer notify: ${state}`));
+            await treadmill.subscribeAsync();
 
             peripheral.on('disconnect', () => this.onPeripheralDisconnect());
             treadmill.on('data', (data, isNotification) => this.onTreadmillData(data, isNotification));
-            crossTrainer.on('data', (data, isNotification) => this.onCrossTrainerData(data, isNotification));
         }
     }
 
     private onPeripheralDisconnect(): void {
         debug("Disconnected");
         this.discovered = false;
-    }
-
-    private onCrossTrainerData(data: Buffer, isNotification: boolean): void {
-        const flags = data.readUintLE(0, 3);
-
-        debug(`Cross trainder flags: ${flags}`);
-
-        Object.values(crossTrainerDataFlags).forEach(value => {
-            if ((flags & value) == value) {
-                debug(`Flag ${value} set`);
-            }
-        });
     }
 
     private onTreadmillData(data: Buffer, isNotification: boolean): void {
