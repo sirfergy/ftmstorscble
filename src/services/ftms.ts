@@ -136,6 +136,8 @@ export class FtmsService {
     private onCrossTrainerData(data: Buffer, isNotification: boolean): void {
         const flags = data.readUintLE(0, 3);
 
+        debug(`Cross trainder flags: ${flags}`);
+
         Object.values(crossTrainerDataFlags).forEach(value => {
             if ((flags & value) == value) {
                 debug(`Flag ${value} set`);
