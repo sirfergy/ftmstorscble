@@ -89,16 +89,11 @@ export class FtmsService {
             await treadmill.subscribeAsync();
 
             debug("Subscribing to treadmill status");
-            debug(`Status: ${status.name}`);
             //await status.subscribeAsync();
-            status.read((error, data) => {
-                if (error) {
-                    debug(error);
-                }
-                else {
-                    debug(`Status: ${data.toString("hex")}`);
-                }
-            })
+
+            status.once('notify', (state) => debug(`Status notify: ${state}`));
+
+
 
             peripheral.on('disconnect', () => this.onPeripheralDisconnect());
             treadmill.on('data', (data, isNotification) => this.onTreadmillData(data, isNotification));
