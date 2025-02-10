@@ -41,8 +41,6 @@ If you have a Raspberry Pi, the native bluetooth does not support (at least with
 # Notes
 This is written pretty specific for my scenario, but with some additional effort it could be expanded to work for many more scenarios.
 
-On linux, you have to use my fork of noble due to a recent change to the kernel. I have a [PR](https://github.com/abandonware/noble/pull/349) out but not sure when it'll be merged.
-
 # Troubleshooting
 ## Raspberry Pi
 - The USB BT adapter may not power up, you need to disable the soft block using these two steps:
