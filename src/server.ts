@@ -44,7 +44,7 @@ app.post("/publisher", (_req, res) => {
       env: {
         ...process.env,
         NOBLE_HCI_DEVICE_ID: "0",
-        DEBUG: "bleno,noble,ant,ftms",
+        DEBUG: "bleno,noble,ant,ftms,*",
       },
       stdio: "pipe",
     });
