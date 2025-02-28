@@ -56,8 +56,8 @@
 
           const messagesDiv = document.getElementById(`${source}Messages`);
 
-          if (messagesDiv.children.length > 10) {
-            // messagesDiv.removeChild(messagesDiv.children[0]);
+          if (messagesDiv.children.length > 100) {
+            messagesDiv.removeChild(messagesDiv.children[0]);
           }
 
           messagesDiv.appendChild(messageDiv);
