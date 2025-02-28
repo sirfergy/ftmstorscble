@@ -43,8 +43,8 @@ app.post("/publisher", (_req, res) => {
     publisher = fork(path.join(__dirname, "publisher.js"), {
       env: {
         ...process.env,
-        NOBLE_HCI_DEVICE_ID: "0",
-        DEBUG: "bleno,noble,ant,ftms,*",
+        //NOBLE_HCI_DEVICE_ID: "0",
+        DEBUG: "bleno,noble,ant,ftms",
       },
       stdio: "pipe",
     });
