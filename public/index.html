@@ -135,6 +135,8 @@
         }).then((response) => {
           if (response.ok) {
             console.log("Terminate publisher request sent");
+            const messagesDiv = document.getElementById(`publisherMessages`);
+            messagesDiv.replaceChildren();
           } else {
             console.error("Failed to send terminate publisher request");
           }
@@ -151,6 +153,8 @@
         }).then((response) => {
           if (response.ok) {
             console.log("Terminate subscriber request sent");
+            const messagesDiv = document.getElementById(`subscriberMessages`);
+            messagesDiv.replaceChildren();
           } else {
             console.error("Failed to send terminate subscriber request");
           }
