@@ -1,0 +1,10 @@
+{
+    "javascript.preferences.importModuleSpecifierEnding": "js",
+    "prettier.singleQuote": false,
+    "prettier.jsxSingleQuote": false,
+    "prettier.enable": true,
+    "prettier.printWidth": 160,
+    "[typescript]": {
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+    },
+}
