@@ -32,7 +32,7 @@
           <button id="publisherButton">Start Publisher</button>
           <button id="terminatePublisherButton">Terminate Publisher</button>
         </div>
-        <div id="publisherMessages" style="overflow: auto; border: solid 1px; margin-left: 1px"></div>
+        <div id="publisherMessages" style="overflow: auto; border: solid 1px; margin-left: 1px; display: flex; flex-direction: column-reverse"></div>
       </div>
     </div>
     <script>
@@ -55,6 +55,11 @@
           messageDiv.textContent = `${message}`;
 
           const messagesDiv = document.getElementById(`${source}Messages`);
+
+          if (messagesDiv.children.length > 10) {
+            messagesDiv.replaceChildren();
+          }
+
           messagesDiv.appendChild(messageDiv);
         } else if (source === "connection") {
           const { subscriber, publisher } = message;
