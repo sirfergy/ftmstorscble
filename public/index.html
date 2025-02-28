@@ -78,6 +78,14 @@
         }
       };
 
+      ws.onclose = () => {
+        disconnectButton.disabled = true;
+        subscriberButton.disabled = true;
+        publisherButton.disabled = true;
+        terminateSubscriberButton.disabled = true;
+        terminatePublisherButton.disabled = true;
+      };
+
       reconnectButton.addEventListener("click", () => {
         window.location.reload();
       });
