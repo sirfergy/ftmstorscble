@@ -7,4 +7,10 @@
     "[typescript]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode",
     },
+    "editor.codeActionsOnSave": {
+        "source.addMissingImports.ts": "always",
+        "source.removeUnusedImports": "always",
+        "source.organizeImports": "always",
+        "source.sortImports": "always",
+    }
 }
