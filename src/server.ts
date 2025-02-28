@@ -9,14 +9,22 @@ import { WebSocket, WebSocketServer } from "ws";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const PORT = Number(process.env.PORT) || 3000;
+
 const app = express();
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
 
-const PORT = Number(process.env.PORT) || 3000;
-
 let subscriber: ChildProcess | undefined;
 let publisher: ChildProcess | undefined;
+
+function sendMessage(message: any): void {
+  wss.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify(message));
+    }
+  });
+}
 
 // Serve the static HTML file
 app.use(express.static(path.join(__dirname, "public")));
@@ -42,31 +50,25 @@ app.post("/publisher", (_req, res) => {
     });
 
     publisher.stdout?.on("data", (data) => {
-      const message = data.toString();
-      wss.clients.forEach((client) => {
-        if (client.readyState === WebSocket.OPEN) {
-          client.send(
-            JSON.stringify({
-              source: "publisher",
-              message,
-            })
-          );
-        }
+      sendMessage({
+        source: "publisher",
+        message: data.toString(),
       });
     });
 
     publisher.stderr?.on("data", (data) => {
-      const message = data.toString();
-      wss.clients.forEach((client) => {
-        if (client.readyState === WebSocket.OPEN) {
-          client.send(
-            JSON.stringify({
-              source: "publisher",
-              message,
-            })
-          );
-        }
+      sendMessage({
+        source: "publisher",
+        message: data.toString(),
       });
+    });
+
+    sendMessage({
+      source: "connection",
+      message: {
+        publisher: !!publisher,
+        subscriber: !!subscriber,
+      },
     });
   }
 
@@ -86,31 +88,25 @@ app.post("/subscriber", (_req, res) => {
     });
 
     subscriber.stdout?.on("data", (data) => {
-      const message = data.toString();
-      wss.clients.forEach((client) => {
-        if (client.readyState === WebSocket.OPEN) {
-          client.send(
-            JSON.stringify({
-              source: "subscriber",
-              message,
-            })
-          );
-        }
+      sendMessage({
+        source: "subscriber",
+        message: data.toString(),
       });
     });
 
     subscriber.stderr?.on("data", (data) => {
-      const message = data.toString();
-      wss.clients.forEach((client) => {
-        if (client.readyState === WebSocket.OPEN) {
-          client.send(
-            JSON.stringify({
-              source: "subscriber",
-              message,
-            })
-          );
-        }
+      sendMessage({
+        source: "subscriber",
+        message: data.toString(),
       });
+    });
+
+    sendMessage({
+      source: "connection",
+      message: {
+        publisher: !!publisher,
+        subscriber: !!subscriber,
+      },
     });
   }
 
@@ -136,9 +132,6 @@ app.post("/terminate", (req, res) => {
   const terminateSubscriber = req.query["subscriber"] === "1";
   const terminatePublisher = req.query["publisher"] === "1";
 
-  console.log(`terminateSubscriber: ${terminateSubscriber}`);
-  console.log(`terminatePublisher: ${terminatePublisher}`);
-
   if (terminateSubscriber && subscriber) {
     subscriber.kill();
     subscriber = undefined;
@@ -149,12 +142,29 @@ app.post("/terminate", (req, res) => {
     publisher = undefined;
   }
 
+  sendMessage({
+    source: "connection",
+    message: {
+      publisher: !!publisher,
+      subscriber: !!subscriber,
+    },
+  });
+
   res.sendStatus(200);
 });
 
-// WebSocket connection
 wss.on("connection", (ws) => {
   console.log("Client connected");
+
+  ws.send(
+    JSON.stringify({
+      source: "connection",
+      message: {
+        publisher: !!publisher,
+        subscriber: !!subscriber,
+      },
+    })
+  );
 
   ws.on("message", (message: string) => {
     console.log(`Received message: ${message}`);
@@ -167,4 +177,20 @@ wss.on("connection", (ws) => {
 
 server.listen(PORT, "0.0.0.0", () => {
   console.log(`Server is running on ${JSON.stringify(server.address())}`);
+});
+
+process.on("SIGINT", () => {
+  console.log("Received SIGINT. Terminating processes...");
+
+  if (subscriber) {
+    subscriber.kill();
+    subscriber = undefined;
+  }
+
+  if (publisher) {
+    publisher.kill();
+    publisher = undefined;
+  }
+
+  process.exit();
 });
