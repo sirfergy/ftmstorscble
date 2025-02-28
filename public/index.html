@@ -21,7 +21,7 @@
           <button id="subscriberButton">Start Subscriber</button>
           <button id="terminateSubscriberButton">Terminate Subscriber</button>
         </div>
-        <div id="subscriberMessages" style="overflow: auto; border: solid 1px; margin-right: 1px"></div>
+        <div id="subscriberMessages" style="overflow: auto; border: solid 1px; margin-right: 1px; display: flex; flex-direction: column-reverse"></div>
       </div>
       <div style="width: 50%">
         <div style="display: flex">
@@ -57,7 +57,7 @@
           const messagesDiv = document.getElementById(`${source}Messages`);
 
           if (messagesDiv.children.length > 10) {
-            messagesDiv.removeChild(messagesDiv.children[0]);
+            // messagesDiv.removeChild(messagesDiv.children[0]);
           }
 
           messagesDiv.appendChild(messageDiv);
