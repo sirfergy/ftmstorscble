@@ -45,7 +45,7 @@
       const terminateSubscriberButton = document.getElementById("terminateSubscriberButton");
       const terminatePublisherButton = document.getElementById("terminatePublisherButton");
 
-      const ws = new WebSocket(`ws://${window.location.host}`);
+      const ws = new WebSocket(`${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}`);
 
       ws.onmessage = (event) => {
         const { source, message } = JSON.parse(event.data);
