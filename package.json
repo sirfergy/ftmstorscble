@@ -6,8 +6,10 @@
   "type": "module",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc",
+    "build": "tsc && npm run copy-html",
+    "copy-html": "copyfiles -a public/** dist/",
     "main": "node dist/index.js",
+    "server": "node dist/server.js",
     "subscriber": "node dist/index.js --rsc --subscribe",
     "publisher": "node dist/index.js --ftms --ant --publish",
     "publisher-secondary": "export DEBUG=bleno,noble,ftms && export NOBLE_HCI_DEVICE_ID=0 && npm run publisher"
@@ -37,17 +39,22 @@
     "@abandonware/noble": "^1.9.2-26",
     "ant-plus-next": "^0.3.2",
     "command-line-args": "^6.0.1",
-    "mqtt": "^5.10.3"
+    "express": "^4.21.2",
+    "mqtt": "^5.10.3",
+    "ws": "^8.18.1"
   },
   "devDependencies": {
     "@types/bleno": "^0.4.6",
     "@types/command-line-args": "^5.2.3",
     "@types/debug": "^4.1.12",
+    "@types/express": "^5.0.0",
     "@types/mqtt": "^0.0.34",
     "@types/noble": "^0.0.44",
     "@types/node": "^22.12.0",
-    "typescript": "^5.7.3",
-    "node-gyp": "11.0.0"
+    "@types/ws": "^8.5.14",
+    "copyfiles": "^2.4.1",
+    "node-gyp": "11.0.0",
+    "typescript": "^5.7.3"
   },
   "engines": {
     "node": ">=14.8.0"

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FTMS to RCS BLE</title>
+  </head>
+
+  <body>
+    <h1>FTMS to RCS BLE</h1>
+    <button id="reconnectButton">Reconnect</button>
+    <button id="disconnectButton">Disconnect</button>
+    <div id="messages"></div>
+    <div style="display: flex; flex-flow: row">
+      <div style="width: 50%">
+        <div style="display: flex">
+          <h2>Subscriber</h2>
+          <div id="subscriberStatus" style="margin-left: 10px; width: 10px; height: 10px; border-radius: 50%; align-self: center"></div>
+        </div>
+        <div>
+          <button id="subscriberButton">Start Subscriber</button>
+          <button id="terminateSubscriberButton">Terminate Subscriber</button>
+        </div>
+        <div id="subscriberMessages" style="overflow: auto; border: solid 1px; margin-right: 1px; display: flex; flex-direction: column-reverse"></div>
+      </div>
+      <div style="width: 50%">
+        <div style="display: flex">
+          <h2>Publisher</h2>
+          <div id="publisherStatus" style="margin-left: 10px; width: 10px; height: 10px; border-radius: 50%; align-self: center"></div>
+        </div>
+        <div>
+          <button id="publisherButton">Start Publisher</button>
+          <button id="terminatePublisherButton">Terminate Publisher</button>
+        </div>
+        <div id="publisherMessages" style="overflow: auto; border: solid 1px; margin-left: 1px; display: flex; flex-direction: column-reverse"></div>
+      </div>
+    </div>
+    <script>
+      const reconnectButton = document.getElementById("reconnectButton");
+      const disconnectButton = document.getElementById("disconnectButton");
+      const subscriberStatus = document.getElementById("subscriberStatus");
+      const publisherStatus = document.getElementById("publisherStatus");
+      const subscriberButton = document.getElementById("subscriberButton");
+      const publisherButton = document.getElementById("publisherButton");
+      const terminateSubscriberButton = document.getElementById("terminateSubscriberButton");
+      const terminatePublisherButton = document.getElementById("terminatePublisherButton");
+
+      const ws = new WebSocket(`${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}`);
+
+      ws.onmessage = (event) => {
+        const { source, message } = JSON.parse(event.data);
+
+        if (source === "publisher" || source === "subscriber") {
+          const messageDiv = document.createElement("div");
+          messageDiv.textContent = `${message}`;
+
+          const messagesDiv = document.getElementById(`${source}Messages`);
+
+          if (messagesDiv.children.length > 100) {
+            messagesDiv.removeChild(messagesDiv.children[0]);
+          }
+
+          messagesDiv.appendChild(messageDiv);
+        } else if (source === "connection") {
+          const { subscriber, publisher } = message;
+          if (subscriber) {
+            subscriberStatus.style.backgroundColor = "green";
+          } else {
+            subscriberStatus.style.backgroundColor = "red";
+          }
+          if (publisher) {
+            publisherStatus.style.backgroundColor = "green";
+          } else {
+            publisherStatus.style.backgroundColor = "red";
+          }
+        } else {
+          console.log(`Received unknown message: ${message}`);
+        }
+      };
+
+      ws.onclose = () => {
+        disconnectButton.disabled = true;
+        subscriberButton.disabled = true;
+        publisherButton.disabled = true;
+        terminateSubscriberButton.disabled = true;
+        terminatePublisherButton.disabled = true;
+      };
+
+      reconnectButton.addEventListener("click", () => {
+        window.location.reload();
+      });
+
+      disconnectButton.addEventListener("click", () => {
+        fetch("/disconnect", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({}),
+        }).then((response) => {
+          if (response.ok) {
+            console.log("Disconnect request sent");
+          } else {
+            console.error("Failed to send disconnect request");
+          }
+        });
+      });
+
+      subscriberButton.addEventListener("click", () => {
+        fetch("/subscriber", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({}),
+        }).then((response) => {
+          if (response.ok) {
+            console.log("Subscriber request sent");
+          } else {
+            console.error("Failed to send subscriber request");
+          }
+        });
+      });
+
+      publisherButton.addEventListener("click", () => {
+        fetch("/publisher", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({}),
+        }).then((response) => {
+          if (response.ok) {
+            console.log("Subscriber request sent");
+          } else {
+            console.error("Failed to send subscriber request");
+          }
+        });
+      });
+
+      terminatePublisherButton.addEventListener("click", () => {
+        fetch("/terminate?publisher=1", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({}),
+        }).then((response) => {
+          if (response.ok) {
+            console.log("Terminate publisher request sent");
+            const messagesDiv = document.getElementById(`publisherMessages`);
+            messagesDiv.replaceChildren();
+          } else {
+            console.error("Failed to send terminate publisher request");
+          }
+        });
+      });
+
+      terminateSubscriberButton.addEventListener("click", () => {
+        fetch("/terminate?subscriber=1", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({}),
+        }).then((response) => {
+          if (response.ok) {
+            console.log("Terminate subscriber request sent");
+            const messagesDiv = document.getElementById(`subscriberMessages`);
+            messagesDiv.replaceChildren();
+          } else {
+            console.error("Failed to send terminate subscriber request");
+          }
+        });
+      });
+    </script>
+  </body>
+</html>
