@@ -1,18 +1,18 @@
 import { ChildProcess, fork } from "child_process";
 import express from "express";
-import http from "http";
-import path from "path";
+import { createServer } from "http";
+import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 import { WebSocket, WebSocketServer } from "ws";
 
 // Define __dirname and __filename in ES module scope
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = dirname(__filename);
 
 const PORT = Number(process.env.PORT) || 3000;
 
 const app = express();
-const server = http.createServer(app);
+const server = createServer(app);
 const wss = new WebSocketServer({ server });
 
 let subscriber: ChildProcess | undefined;
@@ -27,20 +27,20 @@ function sendMessage(message: any): void {
 }
 
 // Serve the static HTML file
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(join(__dirname, "public")));
 
 // Middleware to parse JSON bodies
 app.use(express.json());
 
 app.get("/", (_req, res) => {
-  res.sendFile(path.join(__dirname, "public", "index.html"));
+  res.sendFile(join(__dirname, "public", "index.html"));
 });
 
 app.post("/publisher", (_req, res) => {
   console.log("Received publisher request");
 
   if (!publisher) {
-    publisher = fork(path.join(__dirname, "publisher.js"), {
+    publisher = fork(join(__dirname, "publisher.js"), {
       env: {
         ...process.env,
         //NOBLE_HCI_DEVICE_ID: "0",
@@ -79,7 +79,7 @@ app.post("/subscriber", (_req, res) => {
   console.log("Received subscriber request");
 
   if (!subscriber) {
-    subscriber = fork(path.join(__dirname, "subscriber.js"), {
+    subscriber = fork(join(__dirname, "subscriber.js"), {
       env: {
         ...process.env,
         DEBUG: "bleno,noble,ble",
