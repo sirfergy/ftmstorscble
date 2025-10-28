@@ -27,6 +27,15 @@ const { rsc, ant, ftms, publish, subscribe, broker } = commandLineArgs(optionDef
   broker: string;
 };
 
+// Helper function to publish RSC message to the appropriate service
+function publishRscMessage() {
+  if (publish && bleService) {
+    bleService.publishRscMessage(speedMetersPerSecond, cadenceStepsPerMinute);
+  } else if (publish && mqttService) {
+    mqttService.publishRscMessage(speedMetersPerSecond, cadenceStepsPerMinute);
+  }
+}
+
 let mqttService: MqttService | undefined;
 if (publish && subscribe) {
   // all local!
@@ -51,12 +60,7 @@ if (ant) {
 
   antService.subscribeToAntMessages((cadence) => {
     cadenceStepsPerMinute = cadence;
-
-    if (publish && bleService) {
-      bleService.publishRscMessage(speedMetersPerSecond, cadenceStepsPerMinute);
-    } else if (publish && mqttService) {
-      mqttService!.publishRscMessage(speedMetersPerSecond, cadenceStepsPerMinute);
-    }
+    publishRscMessage();
   });
 }
 
@@ -66,12 +70,7 @@ if (ftms) {
 
   ftmsService.subscribeToFtmsMessages((speed) => {
     speedMetersPerSecond = speed;
-
-    if (publish && bleService) {
-      bleService.publishRscMessage(speedMetersPerSecond, cadenceStepsPerMinute);
-    } else if (publish && mqttService) {
-      mqttService.publishRscMessage(speedMetersPerSecond, cadenceStepsPerMinute);
-    }
+    publishRscMessage();
   });
 }
 

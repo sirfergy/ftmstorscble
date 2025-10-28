@@ -26,6 +26,42 @@ function sendMessage(message: any): void {
   });
 }
 
+// Helper function to attach stdout/stderr handlers to a child process
+function attachProcessHandlers(childProcess: ChildProcess, source: string): void {
+  childProcess.stdout?.on("data", (data) => {
+    sendMessage({
+      source,
+      message: data.toString(),
+    });
+  });
+
+  childProcess.stderr?.on("data", (data) => {
+    sendMessage({
+      source,
+      message: data.toString(),
+    });
+  });
+}
+
+// Helper function to send connection status
+function sendConnectionStatus(): void {
+  sendMessage({
+    source: "connection",
+    message: {
+      publisher: !!publisher,
+      subscriber: !!subscriber,
+    },
+  });
+}
+
+// Helper function to terminate a child process
+function terminateProcess(childProcess: ChildProcess | undefined): undefined {
+  if (childProcess) {
+    childProcess.kill();
+  }
+  return undefined;
+}
+
 // Serve the static HTML file
 app.use(express.static(join(__dirname, "public")));
 
@@ -49,27 +85,8 @@ app.post("/publisher", (_req, res) => {
       stdio: "pipe",
     });
 
-    publisher.stdout?.on("data", (data) => {
-      sendMessage({
-        source: "publisher",
-        message: data.toString(),
-      });
-    });
-
-    publisher.stderr?.on("data", (data) => {
-      sendMessage({
-        source: "publisher",
-        message: data.toString(),
-      });
-    });
-
-    sendMessage({
-      source: "connection",
-      message: {
-        publisher: !!publisher,
-        subscriber: !!subscriber,
-      },
-    });
+    attachProcessHandlers(publisher, "publisher");
+    sendConnectionStatus();
   }
 
   res.sendStatus(200);
@@ -87,27 +104,8 @@ app.post("/subscriber", (_req, res) => {
       stdio: "pipe",
     });
 
-    subscriber.stdout?.on("data", (data) => {
-      sendMessage({
-        source: "subscriber",
-        message: data.toString(),
-      });
-    });
-
-    subscriber.stderr?.on("data", (data) => {
-      sendMessage({
-        source: "subscriber",
-        message: data.toString(),
-      });
-    });
-
-    sendMessage({
-      source: "connection",
-      message: {
-        publisher: !!publisher,
-        subscriber: !!subscriber,
-      },
-    });
+    attachProcessHandlers(subscriber, "subscriber");
+    sendConnectionStatus();
   }
 
   res.sendStatus(200);
@@ -132,23 +130,15 @@ app.post("/terminate", (req, res) => {
   const terminateSubscriber = req.query["subscriber"] === "1";
   const terminatePublisher = req.query["publisher"] === "1";
 
-  if (terminateSubscriber && subscriber) {
-    subscriber.kill();
-    subscriber = undefined;
+  if (terminateSubscriber) {
+    subscriber = terminateProcess(subscriber);
   }
 
-  if (terminatePublisher && publisher) {
-    publisher.kill();
-    publisher = undefined;
+  if (terminatePublisher) {
+    publisher = terminateProcess(publisher);
   }
 
-  sendMessage({
-    source: "connection",
-    message: {
-      publisher: !!publisher,
-      subscriber: !!subscriber,
-    },
-  });
+  sendConnectionStatus();
 
   res.sendStatus(200);
 });
@@ -156,15 +146,7 @@ app.post("/terminate", (req, res) => {
 wss.on("connection", (ws) => {
   console.log("Client connected");
 
-  ws.send(
-    JSON.stringify({
-      source: "connection",
-      message: {
-        publisher: !!publisher,
-        subscriber: !!subscriber,
-      },
-    })
-  );
+  sendConnectionStatus();
 
   ws.on("message", (message: string) => {
     console.log(`Received message: ${message}`);
@@ -182,15 +164,8 @@ server.listen(PORT, "0.0.0.0", () => {
 process.on("SIGINT", () => {
   console.log("Received SIGINT. Terminating processes...");
 
-  if (subscriber) {
-    subscriber.kill();
-    subscriber = undefined;
-  }
-
-  if (publisher) {
-    publisher.kill();
-    publisher = undefined;
-  }
+  subscriber = terminateProcess(subscriber);
+  publisher = terminateProcess(publisher);
 
   process.exit();
 });
