@@ -55,11 +55,10 @@ function sendConnectionStatus(): void {
 }
 
 // Helper function to terminate a child process
-function terminateProcess(childProcess: ChildProcess | undefined): undefined {
+function terminateProcess(childProcess: ChildProcess | undefined): void {
   if (childProcess) {
     childProcess.kill();
   }
-  return undefined;
 }
 
 // Serve the static HTML file
@@ -131,11 +130,13 @@ app.post("/terminate", (req, res) => {
   const terminatePublisher = req.query["publisher"] === "1";
 
   if (terminateSubscriber) {
-    subscriber = terminateProcess(subscriber);
+    terminateProcess(subscriber);
+    subscriber = undefined;
   }
 
   if (terminatePublisher) {
-    publisher = terminateProcess(publisher);
+    terminateProcess(publisher);
+    publisher = undefined;
   }
 
   sendConnectionStatus();
@@ -146,7 +147,15 @@ app.post("/terminate", (req, res) => {
 wss.on("connection", (ws) => {
   console.log("Client connected");
 
-  sendConnectionStatus();
+  ws.send(
+    JSON.stringify({
+      source: "connection",
+      message: {
+        publisher: !!publisher,
+        subscriber: !!subscriber,
+      },
+    })
+  );
 
   ws.on("message", (message: string) => {
     console.log(`Received message: ${message}`);
@@ -164,8 +173,8 @@ server.listen(PORT, "0.0.0.0", () => {
 process.on("SIGINT", () => {
   console.log("Received SIGINT. Terminating processes...");
 
-  subscriber = terminateProcess(subscriber);
-  publisher = terminateProcess(publisher);
+  terminateProcess(subscriber);
+  terminateProcess(publisher);
 
   process.exit();
 });
